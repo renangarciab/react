@@ -1,10 +1,12 @@
 import React, { Component, Fragment } from 'react';
-import Cabecalho from './../../components/Cabecalho'
-import NavMenu from './../../components/NavMenu'
-import Dashboard from './../../components/Dashboard'
-import Widget from './../../components/Widget'
+import Cabecalho from '../../components/Cabecalho'
+import NavMenu from '../../components/NavMenu'
+import Dashboard from '../../components/Dashboard'
+import Widget from '../../components/Widget'
 import TrendsArea from './../../components/TrendsArea'
-import Tweet from './../../components/Tweet'
+import Tweet from '../../components/Tweet'
+import TweetLoading from '../../components/TweetLoading'
+import Modal from '../../components/Modal'
 
 export default class Home extends Component {
     constructor() {
@@ -12,7 +14,8 @@ export default class Home extends Component {
 
         this.state = {
             novoTweet: '',
-            tweets: []
+            tweets: [],
+            tweetAtivo: {}
         }        
     }
 
@@ -44,6 +47,37 @@ export default class Home extends Component {
             })
         }
     }
+
+    removeOTweet = (idDoTweet) => {
+        const listaAtualizada = this.state.tweets.filter((tweetAtual) => {
+            return tweetAtual._id !== idDoTweet
+        })
+
+        fetch(`http://twitelum-api.herokuapp.com/tweets/${idDoTweet}?X-AUTH-TOKEN=${localStorage.getItem('TOKEN')}`, {
+            method: 'DELETE'
+        })
+        .then((resposta) => resposta.json() )
+        .then((respostaConvertidaEmObjeto) => {
+            this.setState({
+                tweets: listaAtualizada
+            })
+        })
+
+        this.setState({
+            tweets: listaAtualizada
+        })
+    }
+
+    abreModal = (idDoTweetQueVaiNoModal) => {
+        console.log('abre');
+        const tweetQueVaiFicarAtivo = this.state.tweets.find((tweetAtual) => {
+            return tweetAtual._id === idDoTweetQueVaiNoModal
+        })
+        this.setState({
+            tweetAtivo: tweetQueVaiFicarAtivo
+        })
+        
+    }    
   render() {
     return (
       <Fragment>
@@ -79,20 +113,38 @@ export default class Home extends Component {
                     <div className="tweetsArea">
                         {   
                             this.state.tweets.length > 0 ?
-                                this.state.tweets.map(function(tweetAtual, indice){
-                                    return <Tweet key={tweetAtual._id}
+                                this.state.tweets.map((tweetAtual, indice) => {
+                                    return <Tweet 
+                                    key={tweetAtual._id}
+                                    id={tweetAtual._id}
                                     texto={tweetAtual.conteudo}
                                     usuario={tweetAtual.usuario}
+                                    removivel={tweetAtual.removivel}
                                     likeado={tweetAtual.likeado}
-                                    totalLikes={tweetAtual.totalLikes}/>
+                                    totalLikes={tweetAtual.totalLikes}
+                                    removeHandler={() => {this.removeOTweet(tweetAtual._id)}}
+                                    abreModalHandler={() => {this.abreModal(tweetAtual._id)}}/>
                                 })
-                            : <p>calma ai</p>                           
+                            : <TweetLoading status='loading'/>                         
                             
                         }
                     </div>
                 </Widget>
             </Dashboard>
         </div>
+        <Modal isAberto={Boolean(this.state.tweetAtivo._id)}>
+            <Widget>
+                {
+                    Boolean(this.state.tweetAtivo._id) &&
+                    <Tweet
+                    id={this.state.tweetAtivo._id}
+                    texto={this.state.tweetAtivo.conteudo}
+                    usuario={this.state.tweetAtivo.usuario}
+                    >                
+                    </Tweet>
+                }
+            </Widget>
+        </Modal>
       </Fragment>
     );
   }

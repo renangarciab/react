@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import './tweet.css'
+import ProtoTypes from 'prop-types'
 
 class Tweet extends Component {
     constructor(props) {
@@ -7,7 +8,8 @@ class Tweet extends Component {
 
         this.state = {
             likeado: props.likeado,
-            totalLikes: props.totalLikes
+            totalLikes: props.totalLikes,
+            removivel: props.removivel
         }
     }
 
@@ -31,15 +33,21 @@ class Tweet extends Component {
     render() {
         return (
             <article className="tweet">
-                <div className="tweet__cabecalho">
+                <div className="tweet__cabecalho" onClick={this.props.abreModalHandler}>
                     <img className="tweet__fotoUsuario"
                     src={this.props.usuario.foto}
                     alt={this.props.usuario.nome} />
                     <span className="tweet__nomeUsuario">{this.props.usuario.nome}</span>
                     <a href=""><span className="tweet__userName">@{this.props.usuario.login}</span></a>
                 </div>
-                <p className="tweet__conteudo">{this.props.texto}</p>
+                <p className="tweet__conteudo" onClick={this.props.abreModalHandler}>{this.props.texto}</p>
                 <footer className="tweet__footer">
+                    {
+                        this.props.removivel &&
+                        <button className="btn btn--blue btn--remove" onClick={this.props.removeHandler}>
+                            X
+                        </button>
+                    }
                     <button className="btn btn--clean" onClick={this.likeHandler}>
                         <svg className={`icon icon--small iconHeart
                         ${ this.state.likeado ? 'iconHeart--active' : '' }
@@ -59,6 +67,20 @@ class Tweet extends Component {
             </article>
         )
     }
+}
+
+Tweet.ProtoTypes = {
+    id: ProtoTypes.string.isRequired,
+    texto: ProtoTypes.string.isRequired,
+    removivel: ProtoTypes.bool,
+    likeado: ProtoTypes.bool,
+    totalLikes: ProtoTypes.number,
+    removeHandler: ProtoTypes.func,
+    usuario: ProtoTypes.shape({
+        foto: ProtoTypes.string,
+        nome: ProtoTypes.string,
+        login: ProtoTypes.string
+    }).isRequired
 }
 
 export default Tweet
