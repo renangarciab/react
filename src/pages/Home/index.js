@@ -7,6 +7,8 @@ import TrendsArea from './../../components/TrendsArea'
 import Tweet from '../../components/Tweet'
 import TweetLoading from '../../components/TweetLoading'
 import Modal from '../../components/Modal'
+import ProtoType from 'prop-types'
+import * as TweetActions from '../../actions/TweetsActions'
 
 export default class Home extends Component {
     constructor() {
@@ -19,14 +21,18 @@ export default class Home extends Component {
         }        
     }
 
+    static contextTypes = {
+        store: ProtoType.object
+    }
+
     componentDidMount() {
-        fetch(`http://twitelum-api.herokuapp.com/tweets?X-AUTH-TOKEN=${localStorage.getItem('TOKEN')}`)
-        .then((respostaDoServidor) => respostaDoServidor.json())
-        .then((tweetsVindosDoServidor) => {
+        console.log(this.context.store.getState())
+        this.context.store.subscribe( () => {            
             this.setState({
-                tweets: tweetsVindosDoServidor
+                tweets: this.context.store.getState()
             })
         })
+        this.context.store.dispatch(TweetActions.carregaTweets())
     }
 
     adicionaTweet = (event) => {
@@ -77,7 +83,18 @@ export default class Home extends Component {
             tweetAtivo: tweetQueVaiFicarAtivo
         })
         
-    }    
+    }
+    
+    fechaModal = (evento) => {
+        const elementoAlvo = evento.target
+        const isModal = elementoAlvo.classList.contains('modal')
+        console.log('fecha')
+        if(isModal){
+            this.setState({
+                tweetAtivo: {}
+            })
+        }
+    }
   render() {
     return (
       <Fragment>
@@ -132,7 +149,9 @@ export default class Home extends Component {
                 </Widget>
             </Dashboard>
         </div>
-        <Modal isAberto={Boolean(this.state.tweetAtivo._id)}>
+        <Modal 
+         isAberto={Boolean(this.state.tweetAtivo._id)}
+         fechaModal={this.fechaModal}>
             <Widget>
                 {
                     Boolean(this.state.tweetAtivo._id) &&
@@ -140,6 +159,8 @@ export default class Home extends Component {
                     id={this.state.tweetAtivo._id}
                     texto={this.state.tweetAtivo.conteudo}
                     usuario={this.state.tweetAtivo.usuario}
+                    likeado={this.state.tweetAtivo.likeado}
+                    totalLikes={this.state.tweetAtivo.totalLikes}
                     >                
                     </Tweet>
                 }
