@@ -4,7 +4,7 @@ import NavMenu from '../../components/NavMenu'
 import Dashboard from '../../components/Dashboard'
 import Widget from '../../components/Widget'
 import TrendsArea from './../../components/TrendsArea'
-import Tweet from '../../components/Tweet'
+import Tweet from '../../containers/TweetContainer'
 import TweetLoading from '../../components/TweetLoading'
 import Modal from '../../components/Modal'
 import ProtoType from 'prop-types'
@@ -26,52 +26,32 @@ export default class Home extends Component {
     }
 
     componentDidMount() {
-        console.log(this.context.store.getState())
+        console.log(this.context.store.getState())        
         this.context.store.subscribe( () => {            
             this.setState({
+                //aplica o state vindo da store
                 tweets: this.context.store.getState()
             })
         })
         this.context.store.dispatch(TweetActions.carregaTweets())
+        console.log(this.context.store.dispatch(TweetActions.carregaTweets()))
     }
 
     adicionaTweet = (event) => {
         event.preventDefault()
         if(this.state.novoTweet) {
-            fetch(`http://twitelum-api.herokuapp.com/tweets?X-AUTH-TOKEN=${localStorage.getItem('TOKEN')}`, {
-                method: 'POST',
-                body: JSON.stringify({conteudo: this.state.novoTweet})
-            })
-            .then((respostaDoServidor) => {
-                return respostaDoServidor.json()
-            })
-            .then ((respostaConvertidaEmObjeto) => {
-                this.setState({
-                    tweets: [respostaConvertidaEmObjeto, ...this.state.tweets],
-                    novoTweet: ''
-                })
+            this.context.store.dispatch(TweetActions.adicionaTweet(this.state.novoTweet))
+            this.setState({
+                novoTweet: ''
             })
         }
     }
 
     removeOTweet = (idDoTweet) => {
-        const listaAtualizada = this.state.tweets.filter((tweetAtual) => {
-            return tweetAtual._id !== idDoTweet
-        })
+        
+        this.context.store.dispatch(TweetActions.removeTweet(idDoTweet))
 
-        fetch(`http://twitelum-api.herokuapp.com/tweets/${idDoTweet}?X-AUTH-TOKEN=${localStorage.getItem('TOKEN')}`, {
-            method: 'DELETE'
-        })
-        .then((resposta) => resposta.json() )
-        .then((respostaConvertidaEmObjeto) => {
-            this.setState({
-                tweets: listaAtualizada
-            })
-        })
-
-        this.setState({
-            tweets: listaAtualizada
-        })
+        console.log(this.context.store.dispatch({type: 'REMOVE_TWEET', idDoTweetQueVaiSumir: idDoTweet}))
     }
 
     abreModal = (idDoTweetQueVaiNoModal) => {

@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import './tweet.css'
 import ProtoTypes from 'prop-types'
+import * as TweetsActions from '../../actions/TweetsActions'
 
 class Tweet extends Component {
     constructor(props) {
@@ -9,7 +10,6 @@ class Tweet extends Component {
         this.state = {
             likeado: props.likeado,
             totalLikes: props.totalLikes,
-            removivel: props.removivel
         }
     }
 
