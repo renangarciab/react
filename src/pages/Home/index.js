@@ -26,7 +26,7 @@ export default class Home extends Component {
     }
 
     componentDidMount() {
-        window.store = this.context.store //teste pelo console
+        window.store = this.context.store //teste pelo console window.store.dispatch({type: 'ADD_NOTIFICACAO', action.msg})
         console.log(this.context.store.getState())        
         this.context.store.subscribe( () => {            
             this.setState({
