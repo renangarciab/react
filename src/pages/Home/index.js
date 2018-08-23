@@ -26,14 +26,16 @@ export default class Home extends Component {
     }
 
     componentDidMount() {
+        window.store = this.context.store //teste pelo console
         console.log(this.context.store.getState())        
         this.context.store.subscribe( () => {            
             this.setState({
                 //aplica o state vindo da store
-                tweets: this.context.store.getState()
+                tweetAtivo: this.context.store.getState().tweets.tweetAtivo,
+                tweets: this.context.store.getState().tweets.tweets,
             })
         })
-        this.context.store.dispatch(TweetActions.carregaTweets())
+        this.context.store.dispatch(TweetActions.carregaTweets())        
         console.log(this.context.store.dispatch(TweetActions.carregaTweets()))
     }
 
@@ -55,13 +57,8 @@ export default class Home extends Component {
     }
 
     abreModal = (idDoTweetQueVaiNoModal) => {
-        console.log('abre');
-        const tweetQueVaiFicarAtivo = this.state.tweets.find((tweetAtual) => {
-            return tweetAtual._id === idDoTweetQueVaiNoModal
-        })
-        this.setState({
-            tweetAtivo: tweetQueVaiFicarAtivo
-        })
+        console.log('abre');        
+        this.context.store.dispatch({type: 'ABRE_MODAL', idDoTweetQueVaiNoModal})
         
     }
     
@@ -70,9 +67,7 @@ export default class Home extends Component {
         const isModal = elementoAlvo.classList.contains('modal')
         console.log('fecha')
         if(isModal){
-            this.setState({
-                tweetAtivo: {}
-            })
+            this.context.store.dispatch({type: 'FECHA_MODAL'})
         }
     }
   render() {
@@ -141,11 +136,21 @@ export default class Home extends Component {
                     usuario={this.state.tweetAtivo.usuario}
                     likeado={this.state.tweetAtivo.likeado}
                     totalLikes={this.state.tweetAtivo.totalLikes}
+                    removivel={this.state.tweetAtivo.removivel}
                     >                
                     </Tweet>
                 }
             </Widget>
         </Modal>
+        {
+            this.context.store.getState().noticacao && 
+            <div className='noticacaoMsg' onAnimationEnd={() => {
+                this.context.store.dispatch({type: 'REMOVE_NOTICICACAO'})
+            }}>
+                { this.context.store.getState().noticacao }
+            </div>
+        }
+                
       </Fragment>
     );
   }
